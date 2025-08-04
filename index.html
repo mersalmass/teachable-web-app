@@ -68,13 +68,27 @@
     }
 
     // run the webcam image through the image model
-    async function predict() {
-        // predict can take in an image, video or canvas html element
-        const prediction = await model.predict(webcam.canvas);
-        for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-            labelContainer.childNodes[i].innerHTML = classPrediction;
-        }
+async function predict() {
+    const prediction = await model.predict(webcam.canvas);
+    for (let i = 0; i < maxPredictions; i++) {
+        const classPrediction =
+            prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+        labelContainer.childNodes[i].innerHTML = classPrediction;
     }
+
+    // OPTIONAL: Send top prediction to Firestore
+    const topPrediction = prediction.reduce((max, p) => p.probability > max.probability ? p : max);
+
+    db.collection("predictions").add({
+        class: topPrediction.className,
+        probability: topPrediction.probability,
+        timestamp: new Date()
+    }).then(() => {
+        console.log("Prediction saved to Firebase");
+    }).catch((error) => {
+        console.error("Error writing to Firebase:", error);
+    });
+}
+
 </script>
+
