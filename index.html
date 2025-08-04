@@ -2,27 +2,6 @@
 <button type="button" onclick="init()">Start</button>
 <div id="webcam-container"></div>
 <div id="label-container"></div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDTwazKZfpbspjMMQTxLTpomDLkzwkYF1Y",
-    authDomain: "scanner-app-ff8f8.firebaseapp.com",
-    projectId: "scanner-app-ff8f8",
-    storageBucket: "scanner-app-ff8f8.firebasestorage.app",
-    messagingSenderId: "946182726710",
-    appId: "1:946182726710:web:1970d1c35f2fdcbb91e497"
-  };
-
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
-
-
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 <script type="text/javascript">
@@ -68,27 +47,13 @@
     }
 
     // run the webcam image through the image model
-async function predict() {
-    const prediction = await model.predict(webcam.canvas);
-    for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction =
-            prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-        labelContainer.childNodes[i].innerHTML = classPrediction;
+    async function predict() {
+        // predict can take in an image, video or canvas html element
+        const prediction = await model.predict(webcam.canvas);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
     }
-
-    // OPTIONAL: Send top prediction to Firestore
-    const topPrediction = prediction.reduce((max, p) => p.probability > max.probability ? p : max);
-
-    db.collection("predictions").add({
-        class: topPrediction.className,
-        probability: topPrediction.probability,
-        timestamp: new Date()
-    }).then(() => {
-        console.log("Prediction saved to Firebase");
-    }).catch((error) => {
-        console.error("Error writing to Firebase:", error);
-    });
-}
-
 </script>
-
