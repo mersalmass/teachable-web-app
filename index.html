@@ -55,5 +55,9 @@
                 prediction[i].className + ": " + prediction[i].probability.toFixed(2);
             labelContainer.childNodes[i].innerHTML = classPrediction;
         }
+    
+    // ADD THIS LINE: Send the prediction data to the parent window
+    window.parent.postMessage(prediction, "*"); 
     }
 </script>
+
